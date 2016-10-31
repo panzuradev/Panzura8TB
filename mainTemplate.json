@@ -98,7 +98,7 @@
         },
         "artifactsBaseUrl": {
           "type": "string",
-          "defaultValue": "https://raw.githubusercontent.com/panzuradev/1.5TB/master",
+          "defaultValue": "https://raw.githubusercontent.com/panzuradev/8TB/master",
           "metadata": {
             "description": "Base URL of the solution template gallery package",
             "artifactsBaseUrl": ""
@@ -255,10 +255,64 @@
                       {
                         "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
                         "createOption": "Empty",
-                        "diskSizeGB": "512",
+                        "diskSizeGB": "1023",
                         "lun": 1,
                         "vhd": {
                           "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-1', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 2,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-2', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 3,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-3', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 4,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-4', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 5,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-5', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 6,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-6', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 7,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-7', '.vhd')]"
                         }
                       }
                     ]
