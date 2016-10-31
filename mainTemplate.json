@@ -1,0 +1,294 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "virtualMachineName": {
+            "type": "string"
+        },
+        "virtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2_v2"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string"
+        },
+        "storageAccountResourceGroup": {
+          "type": "string"
+        },
+        "virtualNetworkNewOrExisting": {
+          "type": "string",
+          "defaultValue": "new",
+          "allowedValues": [
+            "new",
+            "existing"
+          ],
+          "metadata": {
+            "description": "Identify whether to use a new or existing vnet"
+          }
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "virtualNetworkResourceGroup": {
+          "type": "string"
+        },
+        "addressPrefix": {
+            "type": "string"
+        },
+        "subnetName": {
+            "type": "string"
+        },
+        "subnetPrefix": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "storageAccountNewOrExisting": {
+          "type": "string",
+          "defaultValue": "new",
+          "allowedValues": [
+            "new",
+            "existing"
+          ],
+          "metadata": {
+            "description": "Identifies whether to use new or existing Storage Account"
+          }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS"
+        },
+        "publicIPNewOrExistingOrNone": {
+          "type": "string",
+          "defaultValue": "new",
+          "allowedValues": [
+            "new",
+            "existing",
+            "none"
+          ],
+          "metadata": {
+            "description": "Identify if to use a public IP and if so whether it is new"
+          }
+        },
+        "publicIpAddressName": {
+            "type": "string"
+        },
+        "publicIpAddressType": {
+            "defaultValue": "Static",
+            "allowedValues": [
+              "Dynamic",
+              "Static"
+            ],
+            "type": "string"
+
+        },
+        "publicIpAddressResourceGroup": {
+          "type": "string",
+          "defaultValue": "",
+          "metadata": {
+            "description": "Resource group to which the Public IP belongs."
+          }
+        },
+        "artifactsBaseUrl": {
+          "type": "string",
+          "defaultValue": "https://raw.githubusercontent.com/panzuradev/1.5TB/master",
+          "metadata": {
+            "description": "Base URL of the solution template gallery package",
+            "artifactsBaseUrl": ""
+          }
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+      "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+      "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-NIC0')]",
+        "storageAccountSetupURL": "[concat(parameters('artifactsBaseUrl'),'/','storageAccount-',parameters('storageAccountNewOrExisting'),'.json')]",
+        "publicIPSetupURL": "[concat(parameters('artifactsBaseUrl'),'/','publicip-',parameters('publicIPNewOrExistingOrNone'),'.json')]",
+        "virtualNetworkSetupURL": "[concat(parameters('artifactsBaseUrl'),'/','vnet-',parameters('virtualNetworkNewOrExisting'),'.json')]"
+    },
+    "resources": [
+      {
+        "name": "SettingUpStorageAccount",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2015-01-01",
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('storageAccountSetupURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "location": {
+              "value": "[parameters('location')]"
+            },
+            "storageAccountType": {
+              "value": "[parameters('storageAccountType')]"
+            },
+            "storageAccountName": {
+              "value": "[parameters('storageAccountName')]"
+            },
+            "storageAccountExistingRG": {
+              "value": "[parameters('storageAccountResourceGroup')]"
+            }
+          }
+        }
+      },
+      {
+        "name": "SettingUpVirtualNetwork",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2015-01-01",
+        "dependsOn": [
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('virtualNetworkSetupURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "vnetName": {
+              "value": "[parameters('virtualNetworkName')]"
+            },
+            "location": {
+              "value": "[parameters('location')]"
+            },
+            "vnetAddressPrefix": {
+              "value": "[parameters('addressPrefix')]"
+            },
+            "subnet1Name": {
+              "value": "[parameters('subnetName')]"
+            },
+            "subnet1AddressPrefix": {
+              "value": "[parameters('subnetPrefix')]"
+            },
+            "vnetResourceGroup": {
+              "value": "[parameters('virtualNetworkResourceGroup')]"
+            }
+          }
+        }
+      },
+      {
+        "apiVersion": "2015-01-01",
+        "type": "Microsoft.Resources/deployments",
+        "name": "SettingUpPublicIPandFollowing",
+        "dependsOn": [
+          "[concat('Microsoft.Resources/deployments/', 'SettingUpVirtualNetwork')]"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('publicIPSetupURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "location": {
+              "value": "[parameters('location')]"
+            },
+            "publicIPAddressName": {
+              "value": "[parameters('publicIpAddressName')]"
+            },
+            "publicIPAddressType": {
+              "value": "[parameters('publicIpAddressType')]"
+            },
+            "publicIPAddressResourceGroup": {
+              "value": "[parameters('publicIpAddressResourceGroup')]"
+            },
+            "network_NIC_fg11_Name": {
+              "value": "[variables('networkInterfaceName')]"
+            },
+            "subnet1Ref": {
+              "value": "[reference('Microsoft.Resources/deployments/SettingUpVirtualNetwork', '2015-01-01').outputs.subnet1ID.value]"
+            }
+          }
+        }
+      },
+      {
+            "name": "[parameters('virtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', 'SettingUpPublicIPandFollowing')]",
+                "[concat('Microsoft.Resources/deployments/', 'SettingUpStorageAccount')]"
+            ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachineName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "panzura-file-system",
+                    "offer": "azure-vm-preview",
+                    "sku": "panzura-vm",
+                    "version": "latest"
+                  },
+
+                    "osDisk": {
+                        "name": "[parameters('virtualMachineName')]",
+                        "vhd": {
+                            "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-osdisk', '.vhd')]"
+                        },
+                        "createOption": "fromImage"
+                    },
+                    "dataDisks": [
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "1023",
+                        "lun": 0,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-0', '.vhd')]"
+                        }
+                      },
+                      {
+                        "name": "[concat(parameters('virtualMachineName'),'-dataDisk')]",
+                        "createOption": "Empty",
+                        "diskSizeGB": "512",
+                        "lun": 1,
+                        "vhd": {
+                          "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('virtualMachineName'), '-', resourceGroup().name, '-datadisk-1', '.vhd')]"
+                        }
+                      }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net')]"
+                    }
+                }
+            },
+        "plan": {
+          "name": "panzura-vm",
+          "publisher": "panzura-file-system",
+          "product": "azure-vm-preview"
+        }
+
+        },
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "string",
+            "value": "[parameters('adminUsername')]"
+        }
+    }
+}
