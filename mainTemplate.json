@@ -334,10 +334,10 @@
         "plan": {
           "name": "panzura-vm",
           "publisher": "panzura-file-system",
-          "product": "azure-vm-preview"
+          "product": "azure-vm"
         }
 
-        },
+        }
     ],
     "outputs": {
         "adminUsername": {
